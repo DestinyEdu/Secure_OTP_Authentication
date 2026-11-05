@@ -182,3 +182,17 @@ Against the logs generated in Lab 004, it correctly identified `192.168.56.101` 
 ![Log analysis summary](evidence/09-log-analysis.png)
 
 Full output: [`evidence/log_analysis_report.txt`](evidence/log_analysis_report.txt)
+
+## Lab 005: Security Log Analysis
+
+`log_analyzer.py` parses `logs/otp_security.log` — both the application's own security log lines and Flask/Werkzeug's HTTP access log lines, which share the same log file and formatter — to produce a SOC-style triage summary: request counts by status code and endpoint, per-IP request breakdowns, failed-attempt counts, lockout events, and rate-limit events. It then flags any source IP showing attack indicators.
+
+Run it with:
+
+    python3 log_analyzer.py
+
+Against the logs generated in Lab 004, it correctly identified `192.168.56.101` (the Kali VM) as a flagged source IP based on repeated failed OTP attempts, lockout events, and rate-limit violations, matching the brute-force, flooding, and replay attacks actually carried out against it.
+
+![Log analysis summary](evidence/09-log-analysis.png)
+
+Full output: [`evidence/log_analysis_report.txt`](evidence/log_analysis_report.txt)

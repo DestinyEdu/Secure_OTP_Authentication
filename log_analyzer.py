@@ -8,8 +8,10 @@ APP_LINE = re.compile(
     r"^(?P<ts>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}) - "
     r"(?P<level>\w+) - (?P<msg>.*)$"
 )
-ACCESS_LINE = re.compile(
-    r'^(?P<ip>\S+) - - \[(?P<ts>[^\]]+)\] '
+# The access-log entry is *inside* an APP_LINE's msg field, since Werkzeug's
+# logger shares our FileHandler/formatter.
+ACCESS_IN_MSG = re.compile(
+    r'^(?P<ip>\S+) - - \[(?P<httpts>[^\]]+)\] '
     r'"(?P<method>\w+) (?P<path>\S+) HTTP/[\d.]+" (?P<status>\d+)'
 )
 IP_IN_MSG = re.compile(r"(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})")
@@ -27,43 +29,42 @@ with open(LOG_FILE) as f:
     for line in f:
         line = line.rstrip("\n")
 
-        m = ACCESS_LINE.match(line)
-        if m:
-            ip = m.group("ip")
-            status = m.group("status")
-            path = m.group("path")
+        m = APP_LINE.match(line)
+        if not m:
+            continue
+
+        level = m.group("level")
+        msg = m.group("msg")
+        level_counts[level] += 1
+
+        # Case 1: this line is Werkzeug's access log, nested in msg.
+        am = ACCESS_IN_MSG.match(msg)
+        if am:
+            ip = am.group("ip")
+            status = am.group("status")
+            path = am.group("path")
             status_counts[status] += 1
             path_counts[path] += 1
             ip_requests[ip] += 1
             ip_statuses[ip][status] += 1
             continue
 
-        m = APP_LINE.match(line)
-        if m:
-            level = m.group("level")
-            msg = m.group("msg")
-            level_counts[level] += 1
+        # Case 2: our own application log message.
+        ip_match = IP_IN_MSG.search(msg)
+        if ip_match is None:
+            continue  # generic line with no IP attached
+        ip = ip_match.group(1)
+        msg_l = msg.lower()
 
-            ip_match = IP_IN_MSG.search(msg)
-            if ip_match is None:
-                # Generic module-level line with no IP attached (e.g. from
-                # otp_generator.py itself) — the matching app.py line that
-                # names the source IP covers the same event, so skip here.
-                continue
-            ip = ip_match.group(1)
-            msg_l = msg.lower()
-
-            if "locked after" in msg_l:
-                lockout_events.append((m.group("ts"), ip, msg))
-            if "rate limit exceeded" in msg_l or "generation blocked" in msg_l:
-                ratelimit_events.append((m.group("ts"), ip, msg))
-            if "incorrect otp" in msg_l or ("failed" in msg_l and "attempt" in msg_l):
-                failed_attempts[ip] += 1
+        if "locked after" in msg_l:
+            lockout_events.append((m.group("ts"), ip, msg))
+        if "rate limit exceeded" in msg_l or "generation blocked" in msg_l:
+            ratelimit_events.append((m.group("ts"), ip, msg))
+        if "incorrect otp" in msg_l or ("failed" in msg_l and "attempt" in msg_l):
+            failed_attempts[ip] += 1
 
 
 def dedupe(events):
-    """Collapse events from the same IP with the same message within the
-    same second, which happen when a request triggers two log calls."""
     seen = set()
     out = []
     for ts, ip, msg in events:
