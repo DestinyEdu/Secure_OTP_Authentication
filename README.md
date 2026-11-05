@@ -149,3 +149,22 @@ The tests use an injectable fake clock, so expiry, window reset and lockout expi
 - Alerting on repeated lockouts
 
 
+
+## Lab 004: Attack Simulation (Kali Linux)
+
+The OTP module was wrapped in a small Flask API (`app.py`) and attacked from a separate Kali Linux VM on the lab network, to validate that the security controls hold against external requests, not just in unit tests.
+
+| Attack | Script | Expected Defence | Result |
+|---|---|---|---|
+| Brute-force guessing | `brute_force_otp.py` | Warning on 2nd wrong guess, lockout on 3rd | Confirmed — see evidence/03, evidence/04 |
+| OTP flooding | `flood_generate.py` | Generation blocked after 3 requests per 60s | Confirmed — see evidence/05, evidence/06 |
+| OTP replay | `replay_otp.py` | Second use of a valid OTP rejected | Confirmed — see evidence/07, evidence/08 |
+
+![Brute-force attack from Kali](evidence/03-brute-force-kali.png)
+![Brute-force logged on the server](evidence/04-brute-force-server-log.png)
+![OTP flooding attack from Kali](evidence/05-flood-kali.png)
+![OTP flooding logged on the server](evidence/06-flood-server-log.png)
+![Replay attack from Kali](evidence/07-replay-kali.png)
+![Replay logged on the server](evidence/08-replay-server-log.png)
+
+Each request is logged with a timestamp, severity, and source IP in `logs/otp_security.log`. These logs are the basis for Lab 005 (log analysis).
