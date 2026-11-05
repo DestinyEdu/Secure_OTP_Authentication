@@ -37,7 +37,7 @@ The primary focus is on implementing authentication security controls, simulatin
 |---|---|---|
 | Lab 001 | Development environment setup | Completed |
 | Lab 002 | Python OTP generation and verification | Completed |
-| Lab 003 | OTP security controls and logging | In progress |
+| Lab 003 | OTP security controls and logging | Completed |
 | Lab 004 | Authentication attack simulation | Pending |
 | Lab 005 | Security log analysis | Pending |
 | Lab 006 | Wazuh integration | Pending |
@@ -130,6 +130,10 @@ The tests use an injectable fake clock, so expiry, window reset and lockout expi
 
 ![Pytest results: 11 passed](evidence/01-pytest-11-passed.png)
 
+![Lockout demo: warning after 2nd incorrect attempt, lock after 3rd](evidence/02-lockout-demo.png)
+
+`demo_lockout.py` shows the lockout flow: the warning message after the second incorrect OTP, a temporary block on the third, and rejection of even t>
+
 ## Limitations
 
 - State is held in memory for a single instance. There is no database, so state is lost on restart and the module does not support multiple users or servers.
@@ -144,6 +148,4 @@ The tests use an injectable fake clock, so expiry, window reset and lockout expi
 - TOTP (RFC 6238) support
 - Alerting on repeated lockouts
 
-![Lockout demo: warning after 2nd incorrect attempt, lock after 3rd](evidence/02-lockout-demo.png)
 
-`demo_lockout.py` shows the lockout flow: the warning message after the second incorrect OTP, a temporary block on the third, and rejection of even the correct OTP while locked.
