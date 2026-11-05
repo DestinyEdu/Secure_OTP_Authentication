@@ -143,3 +143,7 @@ The tests use an injectable fake clock, so expiry, window reset and lockout expi
 - Salted or HMAC-keyed OTP storage
 - TOTP (RFC 6238) support
 - Alerting on repeated lockouts
+
+![Lockout demo: warning after 2nd incorrect attempt, lock after 3rd](evidence/02-lockout-demo.png)
+
+`demo_lockout.py` shows the lockout flow: the warning message after the second incorrect OTP, a temporary block on the third, and rejection of even the correct OTP while locked.
