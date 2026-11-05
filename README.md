@@ -168,3 +168,17 @@ The OTP module was wrapped in a small Flask API (`app.py`) and attacked from a s
 ![Replay logged on the server](evidence/08-replay-server-log.png)
 
 Each request is logged with a timestamp, severity, and source IP in `logs/otp_security.log`. These logs are the basis for Lab 005 (log analysis).
+
+## Lab 005: Security Log Analysis
+
+`log_analyzer.py` parses `logs/otp_security.log` (both the application's own security log lines and Flask's HTTP access log lines) to produce a SOC-style triage summary: request counts by status code and endpoint, per-IP request breakdowns, failed-attempt counts, lockout events, and rate-limit events — then flags any source IP showing attack indicators.
+
+Run it with:
+
+    python3 log_analyzer.py
+
+Against the logs generated in Lab 004, it correctly identified `192.168.56.101` (the Kali VM) as the flagged source IP, based on repeated failed OTP attempts, lockout events, and rate-limit violations — matching the brute-force, replay, and flooding attacks actually carried out against it.
+
+![Log analysis summary](evidence/09-log-analysis.png)
+
+Full output: [`evidence/log_analysis_report.txt`](evidence/log_analysis_report.txt)

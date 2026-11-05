@@ -1,0 +1,31 @@
+============================================================
+OTP SECURITY LOG ANALYSIS
+============================================================
+
+-- HTTP status code summary --
+
+-- Requests by endpoint --
+
+-- Requests by source IP --
+
+-- Log level summary --
+  INFO: 84
+  WARNING: 32
+  ERROR: 3
+
+-- Failed OTP attempts by source IP --
+  127.0.0.1: 1 failed attempt(s)
+  192.168.56.101: 6 failed attempt(s)
+
+-- Lockout events (possible brute-force) --
+  [2026-11-05 11:40:43,789] 192.168.56.101: Verify request from 192.168.56.101 -> OTP locked after 3 incorrect attempts. Temporarily blocked.
+  [2026-11-05 11:43:54,881] 192.168.56.101: Verify request from 192.168.56.101 -> OTP locked after 3 incorrect attempts. Temporarily blocked.
+  [2026-11-05 11:49:22,287] 192.168.56.101: Verify request from 192.168.56.101 -> OTP locked after 3 incorrect attempts. Temporarily blocked.
+  [2026-11-05 12:10:06,305] 192.168.56.101: Verify request from 192.168.56.101 -> OTP locked after 3 incorrect attempts. Temporarily blocked.
+
+-- Rate-limit events (possible flooding) --
+  None recorded
+
+============================================================
+FLAGGED SOURCE IPs: 127.0.0.1, 192.168.56.101
+============================================================
